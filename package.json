@@ -1,0 +1,28 @@
+{
+  "name": "electron-vault",
+  "version": "1.0.0",
+  "description": "a cloud based secure file storage and management service",
+  "private": true,
+  "homepage": "https://github.com/aryan-raj-05/electron-vault#readme",
+  "bugs": {
+    "url": "https://github.com/aryan-raj-05/electron-vault/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aryan-raj-05/electron-vault.git"
+  },
+  "license": "ISC",
+  "author": "Aryan Raj",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier . --write",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "workspaces": [
+    "apps/api"
+  ],
+  "devDependencies": {
+    "prettier": "^3.9.6"
+  }
+}
