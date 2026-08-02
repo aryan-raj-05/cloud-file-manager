@@ -10,14 +10,26 @@
     "start": "node dist/index.js",
     "dev": "tsx --watch src/index.ts",
     "build": "tsc",
+    "migrate": "npx prisma migrate dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "better-auth": "^1.6.25",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "morgan": "^1.11.0",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^26.1.2",
+    "@types/pg": "^8.20.3",
+    "prisma": "^7.9.1",
     "tsx": "^4.23.1",
     "typescript": "^7.0.2"
   }
