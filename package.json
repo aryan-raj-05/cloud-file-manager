@@ -20,7 +20,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "workspaces": [
-    "apps/api"
+    "apps/api",
+    "apps/web"
   ],
   "devDependencies": {
     "prettier": "^3.9.6"
