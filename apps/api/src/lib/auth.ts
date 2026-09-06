@@ -12,4 +12,29 @@ export const auth = betterAuth({
   },
   // TODO: Add google login support
   // socialProviders: {
+  user: {
+    additionalFields: {
+      role: {
+        type: ["user", "admin"],
+        defaultValue: "user",
+        input: false,
+        required: false,
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await prisma.fileSystemNode.create({
+            data: {
+              name: "root",
+              type: "folder",
+              ownerId: user.id,
+            },
+          });
+        },
+      },
+    },
+  },
 });

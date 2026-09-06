@@ -7,23 +7,31 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  user
+  admin
+}
+
 model User {
-  id            String    @id
+  id            String    @id @default(uuid())
   name          String
   email         String
   emailVerified Boolean   @default(false)
+  role          Role @default(user)
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
 
+  FileNodes     FileSystemNode[]
+
   @@unique([email])
   @@map("user")
 }
 
 model Session {
-  id        String   @id
+  id        String   @id @default(uuid())
   expiresAt DateTime
   token     String
   createdAt DateTime @default(now())
@@ -39,7 +47,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
+  id                    String    @id @default(uuid())
   accountId             String
   providerId            String
   userId                String
@@ -59,7 +67,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id
+  id         String   @id @default(uuid())
   identifier String
   value      String
   expiresAt  DateTime
@@ -68,4 +76,30 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum FileSystemNodeType {
+  file
+  folder
+}
+
+model FileSystemNode {
+  id          String   @id @default(uuid())
+  name        String
+  type        FileSystemNodeType
+  ownerId     String
+  parentId    String?
+  storageKey  String?
+  size        Int?
+  mimeType    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  parent      FileSystemNode?    @relation("FolderTree", fields: [parentId], references: [id])
+  children    FileSystemNode[]   @relation("FolderTree")
+
+  @@index([parentId])
+  @@index([ownerId])
+  @@unique([parentId, ownerId, name])
 }
