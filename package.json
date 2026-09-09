@@ -1,31 +1,45 @@
 {
-  "name": "electron-vault",
+  "name": "api",
   "version": "1.0.0",
-  "description": "a cloud based secure file storage and management service",
-  "private": true,
-  "homepage": "https://github.com/aryan-raj-05/electron-vault#readme",
-  "bugs": {
-    "url": "https://github.com/aryan-raj-05/electron-vault/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aryan-raj-05/electron-vault.git"
-  },
+  "description": "",
   "license": "ISC",
   "author": "Aryan Raj",
   "type": "module",
   "main": "index.js",
+  "private": true,
   "scripts": {
-    "start": "npm run start --workspaces",
-    "build": "npm run build --workspaces",
-    "format": "prettier . --write",
+    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "NODE_ENV=dev tsx --watch src/index.ts",
+    "build": "tsc",
+    "migrate": "npx prisma migrate dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "workspaces": [
-    "apps/api",
-    "apps/web"
-  ],
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1127.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "better-auth": "^1.6.25",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "morgan": "^1.11.0",
+    "multer": "^2.3.0",
+    "multer-s3": "^3.0.1",
+    "pg": "^8.22.0",
+    "zod": "^4.4.3"
+  },
   "devDependencies": {
-    "prettier": "^3.9.6"
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.2.0",
+    "@types/multer-s3": "^3.0.3",
+    "@types/node": "^26.4.1",
+    "@types/pg": "^8.20.3",
+    "prettier": "^3.9.6",
+    "prisma": "^7.10.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
   }
 }
