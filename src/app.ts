@@ -6,6 +6,7 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { config } from "./lib/config.js";
 import { errorHandler } from "./middlewares/error.js";
+import { fileSystemRouter } from "./features/files/files.route.js";
 
 export const app: Express = express();
 
@@ -24,6 +25,7 @@ if (config.NODE_ENV !== "test") {
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use(express.json());
+app.use("/api/files", fileSystemRouter);
 
 app.get("/", (req, res) => {
   res.send("HELLO");
