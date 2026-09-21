@@ -3,7 +3,7 @@ import multer from "multer";
 import crypto from "node:crypto";
 import multerS3 from "multer-s3";
 
-import s3 from "./s3.js";
+import { s3 } from "./s3.js";
 import { config } from "./config.js";
 
 export const upload = multer({
