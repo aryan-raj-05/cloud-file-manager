@@ -1,15 +1,22 @@
 import { Router } from "express";
+import multer from "multer";
 
-import { upload } from "../../lib/upload.js";
 import { authUser } from "../../middlewares/auth-utils.js";
-import { uploadFile } from "./files.controller.js";
 import { asyncHandler } from "../../middlewares/async.js";
+import { handleFileUpload } from "./files.controller.js";
 
 export const fileSystemRouter: Router = Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB
+  },
+});
 
 fileSystemRouter.post(
   "/",
   authUser,
   upload.single("file"),
-  asyncHandler(uploadFile),
+  asyncHandler(handleFileUpload),
 );
