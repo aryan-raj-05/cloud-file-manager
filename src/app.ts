@@ -1,13 +1,13 @@
-import express from "express";
-import morgan from "morgan";
 import cors from "cors";
+import morgan from "morgan";
+import express, { type Express } from "express";
 import { toNodeHandler } from "better-auth/node";
 
 import { auth } from "./lib/auth.js";
 import { config } from "./lib/config.js";
 import { errorHandler } from "./middlewares/error.js";
 
-export const app = express();
+export const app: Express = express();
 
 app.use(
   cors({
@@ -17,11 +17,13 @@ app.use(
   }),
 );
 
-app.all("/api/auth/*splat", toNodeHandler(auth));
-app.use(express.json());
 if (config.NODE_ENV !== "test") {
   app.use(morgan("combined"));
 }
+
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("HELLO");

@@ -7,10 +7,12 @@ export const authUser: RequestHandler = async (req, res, next) => {
   });
 
   if (!session) {
-    return res.sendStatus(401);
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   req.user = session.user;
+  req.session = session.session;
+
   next();
 };
 
