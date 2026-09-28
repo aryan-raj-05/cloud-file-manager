@@ -1,11 +1,16 @@
-import { Router } from "express";
 import multer from "multer";
+import { Router } from "express";
 
 import { authUser } from "../../middlewares/auth-utils.js";
 import { asyncHandler } from "../../middlewares/async.js";
-import { handleFileUpload } from "./files.controller.js";
-
-export const fileSystemRouter: Router = Router();
+import { validateBody } from "../../middlewares/validate.js";
+import { fileMetadata } from "./schemas/presign-file-metadata.js";
+import {
+  createPresignedS3Url,
+  getAllFiles,
+  handleFileUpload,
+  markFileUploadComplete,
+} from "./files.controller.js";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -14,9 +19,27 @@ const upload = multer({
   },
 });
 
+export const fileSystemRouter: Router = Router();
+
+fileSystemRouter.get("/", authUser, asyncHandler(getAllFiles));
+
 fileSystemRouter.post(
   "/",
   authUser,
   upload.single("file"),
   asyncHandler(handleFileUpload),
+);
+
+fileSystemRouter.post(
+  "/upload-url",
+  authUser,
+  validateBody(fileMetadata),
+  asyncHandler(createPresignedS3Url),
+);
+
+fileSystemRouter.post(
+  "/:id/complete",
+  authUser,
+  validateBody(fileMetadata),
+  asyncHandler(markFileUploadComplete),
 );

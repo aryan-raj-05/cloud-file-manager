@@ -83,11 +83,17 @@ enum FileSystemNodeType {
   folder
 }
 
+enum FileUploadStatus {
+  uploading
+  completed
+}
+
 model FileSystemNode {
   id          String   @id @default(uuid())
   name        String
   type        FileSystemNodeType
   ownerId     String
+  uploadStatus FileUploadStatus
   parentId    String?
   storageKey  String?
   size        Int?

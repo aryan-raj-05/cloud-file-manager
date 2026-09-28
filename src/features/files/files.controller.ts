@@ -1,16 +1,22 @@
 import path from "node:path";
 import crypto from "node:crypto";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import type { RequestHandler } from "express";
 
 import { s3 } from "../../lib/s3.js";
 import { prisma } from "../../lib/prisma.js";
 import { config } from "../../lib/config.js";
-import { FileSystemNodeType } from "../../generated/prisma/enums.js";
+import {
+  FileSystemNodeType,
+  FileUploadStatus,
+} from "../../generated/prisma/enums.js";
 
-// This may need changes, storing files in memory may cause crash
-// For now a memory limit is set in the upload engine defined in
-// file router
+import type { RequestHandler } from "express";
+import type { FileMetadata } from "./schemas/presign-file-metadata.js";
+
+// TODO
+// 1. Validate file types and size on backend
+
 export const handleFileUpload: RequestHandler = async (req, res) => {
   const file = req.file!;
 
@@ -35,12 +41,21 @@ export const handleFileUpload: RequestHandler = async (req, res) => {
     }),
   );
 
+  const rootFolder = await prisma.fileSystemNode.findFirst({
+    where: {
+      ownerId: req.user!.id,
+      parentId: { equals: null },
+    },
+  });
+
   const node = await prisma.fileSystemNode.create({
     data: {
       id: fileId,
       name: file.originalname,
       type: FileSystemNodeType.file,
+      uploadStatus: FileUploadStatus.completed,
       ownerId: req.user!.id,
+      parentId: rootFolder!.id,
       storageKey,
       size: file.size,
       mimeType: file.mimetype,
@@ -49,3 +64,59 @@ export const handleFileUpload: RequestHandler = async (req, res) => {
 
   res.status(200).json(node);
 };
+
+export const getAllFiles: RequestHandler = async (req, res) => {
+  const user = req.user!.id;
+
+  const files = await prisma.fileSystemNode.findMany({
+    where: { ownerId: user },
+  });
+
+  return res.status(200).json(files);
+};
+
+export const createPresignedS3Url: RequestHandler<
+  {},
+  any,
+  FileMetadata
+> = async (req, res) => {
+  const { extension, name, size, mimeType } = req.body;
+  const fileId = crypto.randomUUID();
+  const storageKey = `users/${req.user!.id}/files/${fileId}${extension}`;
+
+  const rootFolder = await prisma.fileSystemNode.findFirst({
+    where: {
+      ownerId: req.user!.id,
+      parentId: { equals: null },
+    },
+  });
+
+  await prisma.fileSystemNode.create({
+    data: {
+      id: fileId,
+      name,
+      type: FileSystemNodeType.file,
+      uploadStatus: FileUploadStatus.uploading,
+      ownerId: req.user!.id,
+      parentId: rootFolder!.id,
+      storageKey,
+      size,
+      mimeType,
+    },
+  });
+
+  const command = new PutObjectCommand({
+    Bucket: config.AWS_BUCKET_NAME,
+    Key: storageKey,
+    ContentType: mimeType,
+  });
+
+  const url = await getSignedUrl(s3 as any, command, {
+    expiresIn: 60 * 5, // 5 minutes
+  });
+
+  return res.status(201).json({ uploadUrl: url, storageKey });
+};
+
+// TODO
+export const markFileUploadComplete: RequestHandler = (req, res) => {};
