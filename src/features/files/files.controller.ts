@@ -1,7 +1,8 @@
+import z from "zod";
 import path from "node:path";
 import crypto from "node:crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 import { s3 } from "../../lib/s3.js";
 import { prisma } from "../../lib/prisma.js";
@@ -118,5 +119,45 @@ export const createPresignedS3Url: RequestHandler<
   return res.status(201).json({ uploadUrl: url, storageKey });
 };
 
-// TODO
-export const markFileUploadComplete: RequestHandler = (req, res) => {};
+const idSchema = z.object({
+  id: z.uuid(),
+});
+
+export const markFileUploadComplete: RequestHandler = async (req, res) => {
+  const result = idSchema.safeParse(req.params);
+  if (!result.success) {
+    return res.status(400).json({ error: z.treeifyError(result.error) });
+  }
+
+  const { id } = result.data;
+
+  const file = await prisma.fileSystemNode.findFirst({
+    where: {
+      id,
+      ownerId: req.user!.id,
+    },
+  });
+
+  if (!file) {
+    return res.status(404).json({
+      error: "File not found",
+    });
+  }
+
+  const metadata = await s3.send(
+    new HeadObjectCommand({
+      Bucket: config.AWS_BUCKET_NAME,
+      Key: file.storageKey,
+    }),
+  );
+
+  await prisma.fileSystemNode.update({
+    where: { id, ownerId: req.user!.id },
+    data: {
+      uploadStatus: FileUploadStatus.completed,
+      size: metadata.ContentLength ?? file.size,
+    },
+  });
+
+  return res.sendStatus(200);
+};
