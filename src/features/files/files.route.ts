@@ -5,11 +5,15 @@ import { authUser } from "../../middlewares/auth-utils.js";
 import { asyncHandler } from "../../middlewares/async.js";
 import { validateBody } from "../../middlewares/validate.js";
 import { fileMetadata } from "./schemas/presign-file-metadata.js";
+import { updateFileNode } from "./schemas/move.js";
+import { createFolderSchema } from "./schemas/create-folder.js";
 import {
+  createFolder,
   createPresignedS3Url,
   getAllFiles,
   handleFileUpload,
   markFileUploadComplete,
+  moveFileOrFolder,
 } from "./files.controller.js";
 
 const upload = multer({
@@ -42,4 +46,18 @@ fileSystemRouter.post(
   authUser,
   validateBody(fileMetadata),
   asyncHandler(markFileUploadComplete),
+);
+
+fileSystemRouter.post(
+  "/folder",
+  authUser,
+  validateBody(createFolderSchema),
+  asyncHandler(createFolder),
+);
+
+fileSystemRouter.patch(
+  "/:fileNodeId",
+  authUser,
+  validateBody(updateFileNode),
+  asyncHandler(moveFileOrFolder),
 );

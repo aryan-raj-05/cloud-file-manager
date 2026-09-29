@@ -108,5 +108,5 @@ model FileSystemNode {
 
   @@index([parentId])
   @@index([ownerId])
-  @@unique([parentId, ownerId, name])
+  @@unique([parentId, ownerId])
 }
