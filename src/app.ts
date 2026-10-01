@@ -1,29 +1,15 @@
-import cors from "cors";
 import morgan from "morgan";
 import express, { type Express } from "express";
 import { toNodeHandler } from "better-auth/node";
 
 import { auth } from "./lib/auth.js";
-import { config } from "./lib/config.js";
 import { errorHandler } from "./middlewares/error.js";
 import { fileSystemRouter } from "./features/files/files.route.js";
 
 export const app: Express = express();
 
-app.use(
-  cors({
-    origin: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  }),
-);
-
-if (config.NODE_ENV !== "test") {
-  app.use(morgan("combined"));
-}
-
+app.use(morgan("combined"));
 app.all("/api/auth/*splat", toNodeHandler(auth));
-
 app.use(express.json());
 app.use("/api/files", fileSystemRouter);
 
