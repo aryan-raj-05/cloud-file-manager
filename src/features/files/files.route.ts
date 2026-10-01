@@ -3,10 +3,13 @@ import { Router } from "express";
 
 import { authUser } from "../../middlewares/auth-utils.js";
 import { asyncHandler } from "../../middlewares/async.js";
-import { validateBody } from "../../middlewares/validate.js";
-import { fileMetadata } from "./schemas/presign-file-metadata.js";
-import { updateFileNode } from "./schemas/move.js";
-import { createFolderSchema } from "./schemas/create-folder.js";
+import { validateBody, validateParams } from "../../middlewares/validate.js";
+import {
+  fileMetadata,
+  updateFileNode,
+  createFolderSchema,
+  fileIdentifierSchema,
+} from "./schemas.js";
 import {
   createFolder,
   createPresignedS3Url,
@@ -42,8 +45,9 @@ fileSystemRouter.post(
 );
 
 fileSystemRouter.post(
-  "/:id/complete",
+  "/:fileId/complete",
   authUser,
+  validateParams(fileIdentifierSchema),
   validateBody(fileMetadata),
   asyncHandler(markFileUploadComplete),
 );
@@ -56,8 +60,9 @@ fileSystemRouter.post(
 );
 
 fileSystemRouter.patch(
-  "/:fileNodeId",
+  "/:fileId",
   authUser,
+  validateParams(fileIdentifierSchema),
   validateBody(updateFileNode),
   asyncHandler(moveFileOrFolder),
 );

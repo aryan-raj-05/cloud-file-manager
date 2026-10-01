@@ -1,7 +1,6 @@
 import path from "node:path";
 import crypto from "node:crypto";
 
-import z from "zod";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
@@ -14,9 +13,12 @@ import {
 } from "../../generated/prisma/enums.js";
 
 import type { RequestHandler } from "express";
-import type { FileMetadata } from "./schemas/presign-file-metadata.js";
-import type { UpdateFileNode } from "./schemas/move.js";
-import type { CreateFolderBody } from "./schemas/create-folder.js";
+import type {
+  FileMetadata,
+  UpdateFileNode,
+  CreateFolderBody,
+  FileIdentifier,
+} from "./schemas.js";
 
 const getRootFolderOfUser = (userId: string) => {
   return prisma.fileSystemNode.findFirst({
@@ -143,17 +145,11 @@ export const createPresignedS3Url: RequestHandler<
   return res.status(201).json({ uploadUrl: url, storageKey });
 };
 
-const idSchema = z.object({
-  id: z.uuid(),
-});
-
-export const markFileUploadComplete: RequestHandler = async (req, res) => {
-  const result = idSchema.safeParse(req.params);
-  if (!result.success) {
-    return res.status(400).json({ error: z.treeifyError(result.error) });
-  }
-
-  const { id } = result.data;
+export const markFileUploadComplete: RequestHandler<FileIdentifier> = async (
+  req,
+  res,
+) => {
+  const id = req.params.fileId;
 
   const file = await prisma.fileSystemNode.findFirst({
     where: {
@@ -209,20 +205,12 @@ export const createFolder: RequestHandler<{}, any, CreateFolderBody> = async (
   return res.status(201).json(node);
 };
 
-const fileNodeReqParamSchema = z.object({
-  fileNodeId: z.uuid(),
-});
-
-export const moveFileOrFolder: RequestHandler<{}, any, UpdateFileNode> = async (
-  req,
-  res,
-) => {
-  const result = fileNodeReqParamSchema.safeParse(req.params);
-  if (!result.success) {
-    return res.status(400).json({ error: z.treeifyError(result.error) });
-  }
-
-  const fileToMove = result.data.fileNodeId;
+export const moveFileOrFolder: RequestHandler<
+  FileIdentifier,
+  any,
+  UpdateFileNode
+> = async (req, res) => {
+  const fileToMove = req.params.fileId;
   const { newParentFolderId } = req.body;
 
   if (!newParentFolderId) {
