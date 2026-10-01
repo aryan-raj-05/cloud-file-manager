@@ -1,7 +1,0 @@
-.vscode/
-node_modules/
-dist/
-package*
-generated/*
-apps/web/src/components/ui/*
-README.md
