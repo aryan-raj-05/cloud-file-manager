@@ -2,8 +2,12 @@
   "name": "cloud-file-manager",
   "private": true,
   "scripts": {
+    "dev:all": "pnpm -r run dev",
+    "build:all": "pnpm -r run build",
+    "dev:web": "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build",
     "dev:server": "pnpm --filter server dev",
-    "build": "",
+    "build:server": "pnpm --filter server build",
     "format": "prettier \"packages/*/src/**/*\" --write"
   },
   "devDependencies": {

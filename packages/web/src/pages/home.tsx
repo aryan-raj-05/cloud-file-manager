@@ -1,5 +1,14 @@
+import { getAllFiles } from "../services/files";
+import { useEffect, useState } from "react";
+
 function Home() {
-  return <div>Home</div>;
+  const [files, setFiles] = useState();
+
+  useEffect(() => {
+    getAllFiles().then((data) => setFiles(data));
+  }, []);
+
+  return <div>{JSON.stringify(files)}</div>;
 }
 
 export default Home;
